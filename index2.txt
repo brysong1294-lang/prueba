@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>MI TV LATINO · Webplayer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+<style>
+:root{
+  --red:#ee1c25; --red-dark:#b0060f; --blue:#00c3ff; --blue-dark:#0077a8;
+  --bg-darkest:#050914; --bg-panel:rgba(255,255,255,.04); --bg-panel-2:rgba(255,255,255,.07);
+  --bg-solid:#0b1120; --border-subtle:rgba(255,255,255,.09);
+  --text:#f2f4f8; --text-dim:#8b93a7; --success:#2ecc71; --warn:#f1c40f;
+  --accent-gradient:linear-gradient(135deg,#ff4d55 0%,#ee1c25 60%,#b0060f 100%);
+  --dual-gradient:linear-gradient(90deg,var(--blue),var(--red));
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:'Poppins',sans-serif;background:var(--bg-darkest);color:var(--text);
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block;}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;background:none;color:inherit;}
+input{font-family:inherit;outline:none;border:none;background:none;color:inherit;}
+a{color:inherit;text-decoration:none;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.28);}
+.hidden{display:none !important;}
+.screen{min-height:100vh;width:100%;}
+
+/* ===== LOADER ===== */
+#initial-loader{
+  position:fixed;inset:0;background:var(--bg-darkest);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1.2rem;z-index:9999;
+}
+#initial-loader img{width:90px;height:90px;border-radius:50%;object-fit:cover;box-shadow:0 0 40px rgba(238,28,37,.4);}
+.loader-ring{width:44px;height:44px;border-radius:50%;border:4px solid rgba(255,255,255,.1);
+  border-top-color:var(--red);border-right-color:var(--blue);animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#initial-loader p{color:var(--text-dim);font-size:.9rem;letter-spacing:.5px;}
+
+/* ===== LOGIN ===== */
+.login-page{display:flex;min-height:100vh;width:100%;}
+.login-left{
+  flex:1 1 56%;position:relative;overflow:hidden;display:flex;flex-direction:column;
+  justify-content:center;gap:1.4rem;padding:clamp(2rem,5vw,5rem);
+  background:radial-gradient(circle at 20% 20%, rgba(0,195,255,.08), transparent 55%),
+             radial-gradient(circle at 80% 80%, rgba(238,28,37,.10), transparent 55%),
+             #070c1a;
+}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;pointer-events:none;}
+.blob-1{width:340px;height:340px;background:var(--red);top:-100px;right:-80px;}
+.blob-2{width:300px;height:300px;background:var(--blue);bottom:-100px;left:-60px;}
+.brand-logo-row{display:flex;align-items:center;gap:.8rem;z-index:1;}
+.brand-logo-row img{width:clamp(46px,6vw,64px);height:clamp(46px,6vw,64px);border-radius:50%;object-fit:cover;
+  box-shadow:0 0 25px rgba(238,28,37,.35);}
+.brand-text{display:flex;flex-direction:column;line-height:1.15;}
+.brand-text span{font-weight:800;font-size:clamp(1.1rem,2vw,1.5rem);letter-spacing:.5px;}
+.brand-red{color:var(--red);}
+.brand-blue{color:var(--blue);}
+.brand-text small{color:var(--text-dim);font-size:.68rem;letter-spacing:1.2px;text-transform:uppercase;}
+.login-left h1{z-index:1;font-size:clamp(1.6rem,4vw,2.7rem);font-weight:700;line-height:1.25;max-width:560px;}
+.grad-text{background:var(--dual-gradient);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.login-sub{z-index:1;color:var(--text-dim);max-width:480px;font-size:clamp(.85rem,1.4vw,1rem);line-height:1.6;}
+.feature-chips{z-index:1;display:flex;flex-wrap:wrap;gap:.6rem;}
+.chip{background:var(--bg-panel);border:1px solid var(--border-subtle);padding:.5rem 1rem;border-radius:30px;
+  font-size:.8rem;backdrop-filter:blur(6px);}
+.login-right{
+  flex:1 1 44%;display:flex;align-items:center;justify-content:center;padding:clamp(1.5rem,4vw,3rem);
+  background:rgba(255,255,255,.015);
+}
+.login-card{
+  width:min(420px,100%);position:relative;border-radius:22px;padding:clamp(1.7rem,4vw,2.6rem);
+  background:linear-gradient(#0d1326,#0d1326) padding-box, var(--dual-gradient) border-box;
+  border:1.5px solid transparent;display:flex;flex-direction:column;gap:1rem;
+  box-shadow:0 25px 60px rgba(0,0,0,.45);
+}
+.login-card h2{font-size:1.5rem;font-weight:700;}
+.login-card-sub{color:var(--text-dim);font-size:.85rem;margin-top:-.6rem;}
+.login-error{background:rgba(238,28,37,.12);border:1px solid var(--red);color:#ffb3b6;
+  padding:.6rem .9rem;border-radius:10px;font-size:.82rem;}
+.login-card label{font-size:.78rem;color:var(--text-dim);margin-bottom:-.5rem;font-weight:500;}
+.input-wrap{
+  display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.05);
+  border:1px solid var(--border-subtle);border-radius:12px;padding:.85rem 1rem;transition:.2s;
+}
+.input-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,195,255,.15);}
+.input-wrap input{flex:1;color:var(--text);font-size:.92rem;min-width:0;}
+.input-icon{font-size:1rem;opacity:.8;}
+.toggle-pass{font-size:1rem;opacity:.75;flex-shrink:0;}
+.btn-login{
+  margin-top:.4rem;background:var(--accent-gradient);color:#fff;font-weight:600;font-size:.95rem;
+  padding:.9rem;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  transition:transform .15s, box-shadow .15s;
+}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(238,28,37,.35);}
+.btn-login:active{transform:translateY(0);}
+.btn-login .arrow{transition:transform .2s;}
+.btn-login:hover .arrow{transform:translateX(4px);}
+.login-secure{text-align:center;color:var(--text-dim);font-size:.78rem;margin-top:.2rem;}
+@media (max-width:900px){
+  .login-page{flex-direction:column;}
+  .login-left{flex:none;min-height:auto;padding:2.2rem 1.6rem 1.2rem;gap:1rem;}
+  .login-left h1{max-width:100%;}
+  .login-right{flex:none;padding:1.4rem;}
+  .blob{opacity:.3;}
+}
+@media (max-width:480px){
+  .login-card{padding:1.4rem;border-radius:18px;}
+  .feature-chips{gap:.4rem;}
+  .chip{font-size:.72rem;padding:.4rem .75rem;}
+}
+
+/* ===== APP LAYOUT ===== */
+#app-screen{display:flex;flex-direction:column;height:100vh;}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.7rem 1.4rem;background:var(--bg-solid);border-bottom:1px solid var(--border-subtle);flex-shrink:0;
+  z-index:50;position:relative;
+}
+.topbar-left{display:flex;align-items:center;gap:.8rem;}
+.app-logo{display:flex;align-items:center;gap:.55rem;}
+.app-logo img{width:34px;height:34px;border-radius:50%;object-fit:cover;}
+.app-logo span{font-size:.95rem;font-weight:600;white-space:nowrap;}
+.icon-btn{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:1.05rem;background:var(--bg-panel);transition:.15s;}
+.icon-btn:hover{background:var(--bg-panel-2);}
+.only-mobile{display:none;}
+.topbar-nav{display:flex;gap:.3rem;flex-wrap:wrap;}
+.nav-btn{padding:.55rem 1rem;border-radius:10px;font-size:.85rem;font-weight:500;color:var(--text-dim);
+  display:flex;align-items:center;gap:.4rem;transition:.15s;white-space:nowrap;}
+.nav-btn:hover{background:var(--bg-panel);color:var(--text);}
+.nav-btn.active{background:var(--dual-gradient);color:#fff;}
+.topbar-right{display:flex;align-items:center;gap:.6rem;}
+.profile-menu{position:relative;}
+.profile-btn{display:flex;align-items:center;gap:.5rem;padding:.35rem .7rem .35rem .35rem;border-radius:30px;background:var(--bg-panel);}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--dual-gradient);display:flex;align-items:center;
+  justify-content:center;font-size:.8rem;font-weight:700;}
+.profile-name{font-size:.85rem;font-weight:500;}
+.profile-dropdown{
+  position:absolute;right:0;top:110%;width:230px;background:var(--bg-solid);border:1px solid var(--border-subtle);
+  border-radius:12px;padding:.6rem;display:flex;flex-direction:column;gap:.2rem;box-shadow:0 15px 40px rgba(0,0,0,.5);z-index:60;
+}
+.profile-info{padding:.6rem .7rem;border-bottom:1px solid var(--border-subtle);margin-bottom:.3rem;}
+.profile-info b{display:block;font-size:.9rem;}
+.profile-info small{color:var(--text-dim);font-size:.72rem;}
+.profile-dropdown button{text-align:left;padding:.6rem .7rem;border-radius:8px;font-size:.85rem;}
+.profile-dropdown button:hover{background:var(--bg-panel);}
+
+.app-body{flex:1;display:flex;overflow:hidden;position:relative;}
+
+/* ===== Mobile sub-navigation (Categorías / Canales / Reproductor, etc) ===== */
+.mobile-subnav{display:none;gap:.4rem;padding:.6rem .8rem;background:var(--bg-solid);
+  border-bottom:1px solid var(--border-subtle);flex-shrink:0;}
+.mobile-subnav button{flex:1;padding:.6rem .3rem;border-radius:9px;font-size:.74rem;font-weight:600;
+  background:var(--bg-panel);color:var(--text-dim);text-align:center;white-space:nowrap;transition:.15s;}
+.mobile-subnav button.active{background:var(--dual-gradient);color:#fff;}
+
+.view{flex:1;display:flex;overflow:hidden;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.col{overflow-y:auto;}
+.col-categories{width:230px;flex-shrink:0;background:var(--bg-solid);border-right:1px solid var(--border-subtle);padding:1rem;}
+.col-channels{width:290px;flex-shrink:0;background:#080d1c;border-right:1px solid var(--border-subtle);padding:1rem;}
+.col-player{flex:1;padding:1.2rem;display:flex;flex-direction:column;gap:1rem;}
+.col-grid{flex:1;padding:1.2rem 1.4rem;display:flex;flex-direction:column;gap:1rem;}
+.col-grid.full{width:100%;}
+
+.cat-search input, .search-input{
+  width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border-subtle);
+  padding:.6rem .9rem;border-radius:10px;font-size:.82rem;color:var(--text);
+}
+.cat-search{margin-bottom:.8rem;}
+.cat-list{display:flex;flex-direction:column;gap:.15rem;}
+.cat-item{padding:.6rem .7rem;border-radius:9px;font-size:.83rem;display:flex;justify-content:space-between;
+  align-items:center;color:var(--text-dim);transition:.15s;}
+.cat-item:hover{background:var(--bg-panel);color:var(--text);}
+.cat-item.active{background:linear-gradient(90deg, rgba(0,195,255,.16), rgba(238,28,37,.16));color:#fff;
+  border-left:3px solid var(--red);}
+.badge{background:rgba(255,255,255,.08);padding:.15rem .5rem;border-radius:20px;font-size:.68rem;color:var(--text-dim);}
+
+.channel-item{display:flex;align-items:center;gap:.6rem;padding:.6rem;border-radius:10px;cursor:pointer;transition:.15s;margin-bottom:.25rem;}
+.channel-item:hover{background:var(--bg-panel);}
+.channel-item.active{background:linear-gradient(90deg, rgba(0,195,255,.15), rgba(238,28,37,.15));border:1px solid var(--blue);}
+.channel-item img{width:34px;height:34px;object-fit:contain;border-radius:6px;background:#111;flex-shrink:0;}
+.channel-item span{font-size:.82rem;}
+
+.player-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;}
+.player-title-row h2{font-size:1.2rem;font-weight:600;}
+.player-title-row small{color:var(--text-dim);font-size:.78rem;}
+.btn-ghost{background:var(--bg-panel);border:1px solid var(--border-subtle);padding:.55rem 1rem;border-radius:10px;font-size:.8rem;display:flex;align-items:center;gap:.4rem;transition:.15s;}
+.btn-ghost:hover{background:var(--bg-panel-2);}
+.btn-ghost.active{color:var(--red);border-color:var(--red);}
+.btn-primary{background:var(--accent-gradient);color:#fff;padding:.65rem 1.3rem;border-radius:10px;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:.4rem;transition:transform .15s;}
+.btn-primary:hover{transform:translateY(-2px);}
+
+.player-container{position:relative;width:100%;background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9;}
+.player-container video{width:100%;height:100%;object-fit:contain;background:#000;}
+.pc-spinner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);}
+.pc-spinner::after{content:'';width:46px;height:46px;border-radius:50%;border:4px solid rgba(255,255,255,.2);
+  border-top-color:var(--red);border-right-color:var(--blue);animation:spin .9s linear infinite;}
+.pc-error{position:absolute;inset:0;background:rgba(5,9,20,.92);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1rem;text-align:center;padding:1rem;}
+.pc-error button{background:var(--accent-gradient);padding:.6rem 1.3rem;border-radius:10px;font-weight:600;color:#fff;}
+
+.player-controls{
+  position:absolute;left:0;right:0;bottom:0;padding:.6rem .9rem;display:flex;align-items:center;gap:.6rem;
+  background:linear-gradient(0deg, rgba(0,0,0,.85), transparent);opacity:0;transition:opacity .2s;flex-wrap:nowrap;
+}
+.player-controls.visible{opacity:1;}
+.pc-btn{font-size:1.05rem;padding:.3rem;flex-shrink:0;}
+.pc-time{font-size:.72rem;color:#ddd;white-space:nowrap;flex-shrink:0;}
+.pc-seek{flex:1;accent-color:var(--red);cursor:pointer;min-width:40px;}
+.pc-volume{width:70px;accent-color:var(--blue);cursor:pointer;flex-shrink:0;}
+.pc-quality-wrap{position:relative;flex-shrink:0;}
+.pc-quality-menu{position:absolute;bottom:130%;right:0;background:var(--bg-solid);border:1px solid var(--border-subtle);
+  border-radius:10px;padding:.3rem;min-width:90px;}
+.pc-q-item{padding:.4rem .6rem;font-size:.75rem;border-radius:6px;}
+.pc-q-item:hover{background:var(--bg-panel);}
+.pc-q-item.active{color:var(--blue);}
+.pc-live-badge{display:none;align-items:center;gap:.3rem;background:var(--red);padding:.25rem .6rem;border-radius:6px;
+  font-size:.7rem;font-weight:700;flex-shrink:0;}
+.pc-live-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.4s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+.epg-box{background:var(--bg-panel);border:1px solid var(--border-subtle);border-radius:14px;padding:1rem;}
+.epg-box h4{font-size:.85rem;color:var(--text-dim);margin-bottom:.7rem;text-transform:uppercase;letter-spacing:.5px;}
+.epg-entry{padding:.7rem;border-radius:10px;background:rgba(255,255,255,.03);margin-bottom:.6rem;}
+.epg-entry .epg-tag{font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:5px;margin-right:.5rem;}
+.epg-entry .epg-tag.now{background:var(--red);}
+.epg-entry .epg-tag.next{background:var(--bg-panel-2);color:var(--text-dim);}
+.epg-entry .epg-time{font-size:.72rem;color:var(--text-dim);}
+.epg-entry p{font-size:.78rem;color:var(--text-dim);margin-top:.4rem;line-height:1.4;}
+.epg-progress{height:5px;border-radius:4px;background:rgba(255,255,255,.1);margin-top:.5rem;overflow:hidden;}
+.epg-progress-bar{height:100%;background:var(--dual-gradient);}
+
+.content-header{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.content-header h2{font-size:1.15rem;font-weight:600;}
+.content-header small{color:var(--text-dim);font-size:.78rem;}
+.content-controls{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.content-controls select{background:var(--bg-panel);border:1px solid var(--border-subtle);padding:.55rem .8rem;
+  border-radius:10px;font-size:.8rem;color:var(--text);}
+.view-toggle{display:flex;background:var(--bg-panel);border-radius:10px;overflow:hidden;border:1px solid var(--border-subtle);}
+.view-toggle button{padding:.5rem .7rem;font-size:.9rem;}
+.view-toggle button.active{background:var(--dual-gradient);}
+.chips-filter{display:flex;gap:.5rem;flex-wrap:wrap;}
+.chip-filter{padding:.5rem 1rem;border-radius:20px;font-size:.8rem;background:var(--bg-panel);border:1px solid var(--border-subtle);color:var(--text-dim);}
+.chip-filter.active{background:var(--dual-gradient);color:#fff;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;}
+.grid.list-mode{display:flex;flex-direction:column;gap:.5rem;}
+.card{cursor:pointer;position:relative;}
+.card-poster-wrap{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:2/3;background:#111;}
+.card-poster{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.card:hover .card-poster{transform:scale(1.06);}
+.card-rating{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.65);padding:.2rem .45rem;border-radius:6px;font-size:.68rem;font-weight:600;}
+.card-badge-new{position:absolute;top:6px;right:6px;background:var(--red);padding:.2rem .45rem;border-radius:6px;font-size:.62rem;font-weight:700;}
+.card-fav{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.55);width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;opacity:0;transition:opacity .2s;}
+.card:hover .card-fav, .card-fav.active{opacity:1;}
+.card-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;}
+.card:hover .card-overlay{opacity:1;}
+.card-play{font-size:1.8rem;}
+.card-title{margin-top:.5rem;font-size:.8rem;font-weight:500;line-height:1.3;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.card-progress{position:absolute;bottom:0;left:0;right:0;height:5px;background:rgba(255,255,255,.15);}
+.card-progress-bar{height:100%;background:var(--dual-gradient);}
+
+.grid.list-mode .card{display:flex;gap:.8rem;align-items:center;background:var(--bg-panel);padding:.5rem;border-radius:10px;}
+.grid.list-mode .card-poster-wrap{width:60px;aspect-ratio:2/3;flex-shrink:0;border-radius:8px;}
+.grid.list-mode .card-title{margin-top:0;}
+.grid.list-mode .card-overlay,.grid.list-mode .card-badge-new{display:none;}
+.grid.list-mode .card-fav{position:static;opacity:1;background:none;margin-left:auto;}
+
+.skeleton-card{border-radius:12px;aspect-ratio:2/3;background:linear-gradient(90deg,#151b2e 25%,#1c2438 37%,#151b2e 63%);
+  background-size:400% 100%;animation:shimmer 1.4s infinite;}
+@keyframes shimmer{0%{background-position:100% 0;}100%{background-position:0 0;}}
+
+.load-more-wrap{display:flex;justify-content:center;padding:1rem 0;}
+.load-more-btn{background:var(--bg-panel);border:1px solid var(--border-subtle);padding:.7rem 1.6rem;border-radius:30px;font-size:.85rem;}
+.load-more-btn:hover{background:var(--bg-panel-2);}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text-dim);}
+.empty-state .em-icon{font-size:2.4rem;margin-bottom:.6rem;}
+
+/* ===== CINEMA OVERLAY ===== */
+.cinema-overlay{position:fixed;inset:0;background:var(--bg-darkest);z-index:200;display:flex;flex-direction:column;}
+.cinema-top{display:flex;align-items:center;gap:1rem;padding:1rem 1.4rem;border-bottom:1px solid var(--border-subtle);}
+.cinema-title h3{font-size:1rem;font-weight:600;}
+.cinema-title small{color:var(--text-dim);font-size:.75rem;}
+.cinema-body{flex:1;display:flex;overflow:hidden;padding:1.2rem;gap:1.2rem;}
+#cinema-player-container{flex:1;aspect-ratio:auto;height:100%;border-radius:16px;}
+.episodes-sidebar{width:320px;flex-shrink:0;overflow-y:auto;background:var(--bg-solid);border-radius:16px;padding:1rem;}
+.episodes-sidebar h4{font-size:.85rem;color:var(--text-dim);margin-bottom:.8rem;text-transform:uppercase;}
+.episode-row{display:flex;gap:.7rem;padding:.6rem;border-radius:10px;cursor:pointer;margin-bottom:.5rem;transition:.15s;}
+.episode-row:hover{background:var(--bg-panel);}
+.episode-row.active{background:linear-gradient(90deg, rgba(0,195,255,.15), rgba(238,28,37,.15));border:1px solid var(--blue);}
+.episode-row img{width:80px;height:50px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#111;}
+.episode-row .ep-num{font-size:.68rem;color:var(--blue);font-weight:700;}
+.episode-row .ep-title{font-size:.8rem;margin-top:.15rem;}
+.next-episode-toast{position:absolute;bottom:90px;right:20px;background:var(--bg-solid);border:1px solid var(--border-subtle);
+  border-radius:12px;padding:1rem;z-index:10;box-shadow:0 15px 40px rgba(0,0,0,.5);}
+.next-episode-toast p{font-size:.85rem;margin-bottom:.6rem;}
+.next-ep-actions{display:flex;gap:.5rem;}
+.next-ep-actions button{padding:.4rem .8rem;border-radius:8px;font-size:.78rem;background:var(--bg-panel);}
+#next-ep-now{background:var(--accent-gradient);color:#fff;}
+
+/* ===== MODALS ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:300;
+  display:flex;align-items:center;justify-content:center;padding:1.2rem;animation:fadeIn .2s ease;}
+.modal-info{width:min(760px,100%);max-height:88vh;overflow-y:auto;background:var(--bg-solid);border-radius:18px;
+  position:relative;border:1px solid var(--border-subtle);}
+.modal-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);
+  z-index:5;font-size:1rem;}
+.modal-backdrop{height:160px;background-size:cover;background-position:center;
+  background-color:#111;mask-image:linear-gradient(180deg,#000 40%,transparent 100%);}
+.modal-body{display:flex;gap:1.4rem;padding:0 1.6rem 1.6rem;margin-top:-70px;flex-wrap:wrap;}
+.modal-poster{width:150px;border-radius:12px;flex-shrink:0;box-shadow:0 15px 30px rgba(0,0,0,.5);background:#111;aspect-ratio:2/3;object-fit:cover;}
+.modal-details{flex:1;min-width:240px;display:flex;flex-direction:column;gap:.6rem;padding-top:75px;}
+.modal-details h2{font-size:1.3rem;font-weight:700;}
+.modal-meta{display:flex;gap:.6rem;flex-wrap:wrap;font-size:.78rem;color:var(--text-dim);}
+.modal-meta span{background:var(--bg-panel);padding:.25rem .6rem;border-radius:6px;}
+.modal-rating{display:flex;align-items:center;gap:.3rem;color:var(--warn);font-size:.9rem;}
+.modal-plot{font-size:.85rem;color:#d3d7e2;line-height:1.6;}
+.modal-cast,.modal-director{font-size:.78rem;color:var(--text-dim);}
+.modal-cast b,.modal-director b{color:var(--text);}
+.modal-actions{display:flex;gap:.6rem;margin-top:.4rem;flex-wrap:wrap;}
+.modal-seasons{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem;}
+.season-btn{padding:.5rem 1rem;border-radius:20px;font-size:.8rem;background:var(--bg-panel);border:1px solid var(--border-subtle);}
+.season-btn.active{background:var(--dual-gradient);}
+.modal-episodes{margin-top:1rem;display:flex;flex-direction:column;gap:.6rem;}
+.modal-ep-row{display:flex;gap:.8rem;align-items:center;background:var(--bg-panel);padding:.6rem;border-radius:10px;}
+.modal-ep-row img{width:70px;height:44px;object-fit:cover;border-radius:6px;background:#111;flex-shrink:0;}
+.modal-ep-row .me-title{font-size:.82rem;}
+.modal-ep-row .me-sub{font-size:.7rem;color:var(--text-dim);}
+.modal-ep-play{margin-left:auto;font-size:1.3rem;color:var(--blue);flex-shrink:0;}
+.skeleton-modal{padding:2rem;display:flex;gap:1rem;}
+.skeleton-modal .sk-a{width:150px;height:220px;border-radius:12px;}
+.skeleton-modal .sk-b{flex:1;height:220px;border-radius:12px;}
+
+.modal-shortcuts{width:min(420px,100%);background:var(--bg-solid);border-radius:18px;padding:1.6rem;position:relative;border:1px solid var(--border-subtle);display:flex;flex-direction:column;gap:.9rem;}
+.modal-shortcuts h2{margin-bottom:.2rem;font-size:1.1rem;}
+.modal-shortcuts ul{display:flex;flex-direction:column;gap:.6rem;}
+.modal-shortcuts li{display:flex;justify-content:space-between;font-size:.85rem;color:var(--text-dim);}
+.modal-shortcuts kbd{background:var(--bg-panel);border:1px solid var(--border-subtle);padding:.2rem .5rem;border-radius:6px;color:var(--text);font-size:.78rem;}
+
+/* ===== TOASTS ===== */
+.toast-container{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:.6rem;z-index:500;}
+.toast{background:var(--bg-solid);border:1px solid var(--border-subtle);border-left:4px solid var(--blue);
+  padding:.8rem 1.2rem;border-radius:10px;font-size:.83rem;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,.4);
+  animation:slideIn .25s ease;}
+.toast.success{border-left-color:var(--success);}
+.toast.error{border-left-color:var(--red);}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:1200px){
+  .col-categories{width:190px;}
+  .col-channels{width:250px;}
+  .episodes-sidebar{width:260px;}
+}
+@media (max-width:1000px){
+  .only-mobile{display:flex;}
+  .topbar-nav{position:fixed;top:60px;left:0;right:0;background:var(--bg-solid);flex-direction:column;
+    padding:.6rem;border-bottom:1px solid var(--border-subtle);transform:translateY(-120%);transition:.25s;z-index:80;}
+  .topbar-nav.open{transform:translateY(0);}
+  .nav-btn{width:100%;justify-content:flex-start;}
+
+  .mobile-subnav{display:flex;}
+
+  .view-live, .view-vod{flex-direction:column;}
+  .view-live .col-categories,
+  .view-live .col-channels,
+  .view-live .col-player,
+  .view-vod .col-categories,
+  .view-vod #vod-grid-col{
+    display:none;position:static;width:100%;left:auto;box-shadow:none;height:auto;flex:1;overflow-y:auto;
+  }
+  .view-live[data-section="categories"] .col-categories{display:block;}
+  .view-live[data-section="channels"] .col-channels{display:block;}
+  .view-live[data-section="player"] .col-player{display:flex;}
+  .view-vod[data-section="categories"] .col-categories{display:block;}
+  .view-vod[data-section="grid"] #vod-grid-col{display:flex;}
+
+  .cinema-body{flex-direction:column;}
+  .episodes-sidebar{width:100%;height:220px;}
+}
+@media (max-width:640px){
+  .app-logo span{display:none;}
+  .profile-name{display:none;}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:.7rem;}
+  .modal-body{flex-direction:column;margin-top:-40px;padding:0 1rem 1.2rem;}
+  .modal-poster{width:120px;margin:0 auto;}
+  .modal-details{padding-top:0;text-align:center;align-items:center;}
+  .modal-meta,.modal-actions{justify-content:center;}
+  .content-header{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<div id="initial-loader">
+  <img src="logo.png" alt="MI TV LATINO" onerror="this.style.display='none'">
+  <div class="loader-ring"></div>
+  <p>Cargando MI TV LATINO...</p>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen" class="screen hidden">
+  <div class="login-page">
+    <div class="login-left">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="brand-logo-row">
+        <img src="logo.png" alt="logo" onerror="this.style.display='none'">
+        <div class="brand-text"><span><span class="brand-red">MI TV</span> <span class="brand-blue">LATINO</span></span><small>Lo mejor en un solo lugar</small></div>
+      </div>
+      <h1>Disfruta de tus programas <span class="grad-text">favoritos</span></h1>
+      <p class="login-sub">Miles de canales en vivo, películas y series en un solo lugar, a cualquier hora y en cualquier dispositivo.</p>
+      <div class="feature-chips">
+        <div class="chip">📺 Canales en vivo</div>
+        <div class="chip">🎬 Películas</div>
+        <div class="chip">📽️ Series</div>
+        <div class="chip">⚽ Deportes</div>
+      </div>
+    </div>
+    <div class="login-right">
+      <form id="login-form" class="login-card" autocomplete="off">
+        <h2>Iniciar sesión</h2>
+        <p class="login-card-sub">Ingresa tus datos para continuar</p>
+        <div id="login-error" class="login-error hidden"></div>
+        <label>Servidor</label>
+        <div class="input-wrap">
+          <span class="input-icon">🌐</span>
+          <input type="text" id="input-server" value="http://wbgs.mitvlatino.club:25461" required>
+        </div>
+        <label>Usuario</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="input-username" value="pruebaclaude" required>
+        </div>
+        <label>Contraseña</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="input-password" value="pruebacla" required>
+          <button type="button" id="toggle-pass" class="toggle-pass">👁️</button>
+        </div>
+        <button type="submit" class="btn-login" id="login-submit"><span>Entrar</span><span class="arrow">→</span></button>
+        <p class="login-secure">🔒 Tu conexión está protegida</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen" class="screen hidden">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button id="hamburger-btn" class="icon-btn only-mobile">☰</button>
+      <div class="app-logo">
+        <img src="logo.png" onerror="this.style.display='none'">
+        <span><b class="brand-red">MI TV</b> <b class="brand-blue">LATINO</b></span>
+      </div>
+    </div>
+    <nav class="topbar-nav" id="topbar-nav">
+      <button class="nav-btn active" data-tab="live">📺 En Vivo</button>
+      <button class="nav-btn" data-tab="movies">🎬 Películas</button>
+      <button class="nav-btn" data-tab="series">📽️ Series</button>
+      <button class="nav-btn" data-tab="favorites">❤️ Favoritos</button>
+      <button class="nav-btn" data-tab="continue">🕒 Continuar</button>
+    </nav>
+    <div class="topbar-right">
+      <button class="icon-btn" id="shortcuts-btn" title="Atajos de teclado (?)">⌨️</button>
+      <div class="profile-menu">
+        <button class="profile-btn" id="profile-btn">
+          <span class="avatar" id="avatar-letter">U</span>
+          <span class="profile-name" id="profile-name">Usuario</span>
+        </button>
+        <div class="profile-dropdown hidden" id="profile-dropdown">
+          <div class="profile-info"><b id="dropdown-username">-</b><small id="dropdown-expiry">-</small></div>
+          <button id="refresh-content-btn">🔄 Actualizar contenido</button>
+          <button id="parental-btn">🔒 Control Parental</button>
+          <button id="dropdown-shortcuts">⌨️ Atajos de teclado</button>
+          <button id="logout-btn">🚪 Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- LIVE -->
+    <section class="view view-live" id="view-live" data-section="categories">
+      <div class="mobile-subnav" id="live-subnav">
+        <button class="active" data-section="categories">📂 Categorías</button>
+        <button data-section="channels">📺 Canales</button>
+        <button data-section="player">▶️ Reproductor</button>
+      </div>
+      <aside class="col col-categories" id="live-categories-col"></aside>
+      <aside class="col col-channels" id="live-channels-col"></aside>
+      <main class="col col-player" id="live-player-col">
+        <div class="player-title-row">
+          <div>
+            <h2 id="live-current-title">Selecciona un canal</h2>
+            <small id="live-current-sub">TV en vivo</small>
+          </div>
+          <button class="btn-ghost" id="live-fav-btn">🤍 Favorito</button>
+        </div>
+        <div class="player-container" id="live-player-container">
+          <video id="live-video" playsinline></video>
+          <div class="pc-spinner hidden"></div>
+          <div class="pc-error hidden"><p>❌ No se pudo cargar el canal</p><button>🔄 Reintentar</button></div>
+          <div class="player-controls" id="live-controls">
+            <span class="pc-live-badge">EN VIVO</span>
+            <button class="pc-btn pc-play">▶️</button>
+            <span class="pc-time">00:00 / 00:00</span>
+            <input type="range" class="pc-seek" min="0" max="100" value="0">
+            <button class="pc-btn pc-mute">🔊</button>
+            <input type="range" class="pc-volume" min="0" max="1" step="0.01" value="1">
+            <div class="pc-quality-wrap"><button class="pc-btn pc-quality">⚙️</button><div class="pc-quality-menu hidden"></div></div>
+            <button class="pc-btn pc-pip">🗗</button>
+            <button class="pc-btn pc-fullscreen">⛶</button>
+          </div>
+        </div>
+        <div class="epg-box" id="epg-box"><h4>Guía de programación</h4><div id="epg-content"><p style="color:var(--text-dim);font-size:.82rem;">Selecciona un canal para ver la programación.</p></div></div>
+      </main>
+    </section>
+
+    <!-- VOD (movies/series) -->
+    <section class="view view-vod hidden" id="view-vod" data-section="categories">
+      <div class="mobile-subnav" id="vod-subnav">
+        <button class="active" data-section="categories">📂 Categorías</button>
+        <button data-section="grid">🎬 Contenido</button>
+      </div>
+      <aside class="col col-categories" id="vod-categories-col"></aside>
+      <main class="col col-grid" id="vod-grid-col">
+        <div class="content-header">
+          <div><h2 id="vod-title">Películas</h2><small id="vod-count">0 elementos</small></div>
+          <div class="content-controls">
+            <input class="search-input" id="vod-search" placeholder="Buscar..." style="width:180px;">
+            <select id="vod-sort">
+              <option value="default">Por defecto</option>
+              <option value="az">Nombre A-Z</option>
+              <option value="za">Nombre Z-A</option>
+              <option value="rating">Mejor valorado</option>
+              <option value="recent">Recién agregados</option>
+            </select>
+            <div class="view-toggle"><button class="active" data-view="grid">▦</button><button data-view="list">☰</button></div>
+          </div>
+        </div>
+        <div class="grid" id="vod-grid"></div>
+        <div class="load-more-wrap hidden" id="vod-load-more-wrap"><button class="load-more-btn" id="vod-load-more">Cargar más</button></div>
+      </main>
+    </section>
+
+    <!-- SIMPLE (favorites / continue) -->
+    <section class="view view-simple hidden" id="view-simple">
+      <main class="col col-grid full">
+        <div class="content-header">
+          <div><h2 id="simple-title">Favoritos</h2><small id="simple-count">0 elementos</small></div>
+          <div class="content-controls">
+            <input class="search-input" id="simple-search" placeholder="Buscar..." style="width:180px;">
+            <div class="view-toggle"><button class="active" data-view="grid">▦</button><button data-view="list">☰</button></div>
+          </div>
+        </div>
+        <div class="chips-filter" id="simple-filters">
+          <button class="chip-filter active" data-filter="all">Todos</button>
+          <button class="chip-filter" data-filter="live">TV en vivo</button>
+          <button class="chip-filter" data-filter="movie">Películas</button>
+          <button class="chip-filter" data-filter="series">Series</button>
+        </div>
+        <div class="grid" id="simple-grid"></div>
+      </main>
+    </section>
+  </div>
+
+  <!-- CINEMA -->
+  <div class="cinema-overlay hidden" id="cinema-overlay">
+    <div class="cinema-top">
+      <button id="cinema-back" class="icon-btn">←</button>
+      <div class="cinema-title"><h3 id="cinema-title">-</h3><small id="cinema-subtitle"></small></div>
+    </div>
+    <div class="cinema-body">
+      <div class="player-container" id="cinema-player-container">
+        <video id="cinema-video" playsinline></video>
+        <div class="pc-spinner hidden"></div>
+        <div class="pc-error hidden"><p>❌ Error al reproducir el contenido</p><button>🔄 Reintentar</button></div>
+        <div class="next-episode-toast hidden" id="next-ep-toast">
+          <p>Siguiente episodio en <span id="next-ep-count">5</span>s</p>
+          <div class="next-ep-actions"><button id="next-ep-cancel">Cancelar</button><button id="next-ep-now">Reproducir ahora</button></div>
+        </div>
+        <div class="player-controls" id="cinema-controls">
+          <span class="pc-live-badge">EN VIVO</span>
+          <button class="pc-btn pc-play">▶️</button>
+          <span class="pc-time">00:00 / 00:00</span>
+          <input type="range" class="pc-seek" min="0" max="100" value="0">
+          <button class="pc-btn pc-mute">🔊</button>
+          <input type="range" class="pc-volume" min="0" max="1" step="0.01" value="1">
+          <div class="pc-quality-wrap"><button class="pc-btn pc-quality">⚙️</button><div class="pc-quality-menu hidden"></div></div>
+          <button class="pc-btn pc-pip">🗗</button>
+          <button class="pc-btn pc-fullscreen">⛶</button>
+        </div>
+      </div>
+      <aside class="episodes-sidebar hidden" id="episodes-sidebar">
+        <h4>Episodios</h4>
+        <div id="episodes-list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- INFO MODAL -->
+  <div class="modal-overlay hidden" id="info-modal">
+    <div class="modal-info" id="info-modal-box"></div>
+  </div>
+
+  <!-- SHORTCUTS MODAL -->
+  <div class="modal-overlay hidden" id="shortcuts-modal">
+    <div class="modal-shortcuts">
+      <button class="modal-close" id="shortcuts-close">✕</button>
+      <h2>⌨️ Atajos de teclado</h2>
+      <ul>
+        <li><span>Reproducir / Pausar</span><kbd>Espacio</kbd></li>
+        <li><span>Subir / bajar volumen</span><kbd>↑ / ↓</kbd></li>
+        <li><span>Retroceder / adelantar 10s</span><kbd>← / →</kbd></li>
+        <li><span>Pantalla completa</span><kbd>F</kbd></li>
+        <li><span>Cerrar modal / salir</span><kbd>Esc</kbd></li>
+        <li><span>Mostrar esta ayuda</span><kbd>?</kbd></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PARENTAL CONTROL MODAL -->
+  <div class="modal-overlay hidden" id="parental-modal">
+    <div class="modal-shortcuts" id="parental-modal-box"></div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+</div>
+
+<script>
+/* ========================= STATE & HELPERS ========================= */
+const state = {
+  session:null, userInfo:null,
+  categories:{}, content:{}, counts:{},
+  loaded:{}, favorites:[], progress:{},
+  currentTab:'live', currentType:null, currentCategory:null,
+  liveChannels:[], currentChannelId:null,
+  vodFiltered:[], vodRenderCount:60,
+  viewMode:{vod:'grid', simple:'grid'},
+  simpleFilter:'all',
+  liveController:null, cinemaController:null,
+  adultCategoryIds:{},
+  parental:{enabled:false, pin:'', unlocked:false},
+};
+
+function esc(str){ return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function decodeEpg(str){ try{ return decodeURIComponent(escape(atob(str))); }catch(e){ return str||''; } }
+function fmtTime(t){ if(!isFinite(t)||t<0) return '00:00'; const h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=Math.floor(t%60);
+  return (h>0?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
+function storageGet(key, fallback){ try{ const v = localStorage.getItem(key); return v?JSON.parse(v):fallback; }catch(e){ return fallback; } }
+function storageSet(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+function toast(msg, type='info', duration=3200){
+  const box = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, duration);
+}
+
+/* ========================= API ========================= */
+async function xtreamFetch(action, params={}){
+  const s = state.session;
+  const url = new URL(s.server.replace(/\/$/,'') + '/player_api.php');
+  url.searchParams.set('username', s.username);
+  url.searchParams.set('password', s.password);
+  if(action) url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+  const res = await fetch(url.toString());
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return res.json();
+}
+function buildStreamUrl(type, id, extension){
+  const s = state.session; const base = s.server.replace(/\/$/,'');
+  const ext = extension || 'mp4';
+  if(type==='live') return `${base}/live/${s.username}/${s.password}/${id}.m3u8`;
+  if(type==='movie') return `${base}/movie/${s.username}/${s.password}/${id}.${ext}`;
+  return `${base}/series/${s.username}/${s.password}/${id}.${ext}`;
+}
+function normalizeItem(raw){
+  const rawIcon = raw.stream_icon || raw.cover || raw.cover_big || '';
+  const icon = (rawIcon && rawIcon !== '0') ? rawIcon : '';
+  return {
+    ...raw,
+    id: raw.stream_id ?? raw.series_id ?? raw.vod_id,
+    name: raw.name || '',
+    icon: icon,
+    rating: parseFloat(raw.rating || raw.rating_5based || 0) || null,
+    added: raw.added ? parseInt(raw.added) : null,
+    extension: raw.container_extension || 'mp4',
+    category_id: raw.category_id,
+  };
+}
+
+/* ========================= AUTH ========================= */
+async function loginWithSession(session, silent){
+  state.session = session;
+  const res = await xtreamFetch(null);
+  if(!res || !res.user_info || (res.user_info.auth!==1 && res.user_info.status && res.user_info.status!=='Active')){
+    throw new Error('Credenciales inválidas o cuenta inactiva');
+  }
+  state.userInfo = res.user_info;
+  storageSet('xtream_session', session);
+  return res;
+}
+function logout(){
+  stopLiveVideo();
+  localStorage.removeItem('xtream_session');
+  location.reload();
+}
+
+/* ========================= FAVORITES / PROGRESS ========================= */
+function isFavorite(type,id){ return state.favorites.some(f=>f.type===type && String(f.id)===String(id)); }
+function toggleFavorite(type, item){
+  const idx = state.favorites.findIndex(f=>f.type===type && String(f.id)===String(item.id));
+  if(idx>=0){ state.favorites.splice(idx,1); toast('Eliminado de favoritos','info'); }
+  else{ state.favorites.push({type,id:item.id,name:item.name,icon:item.icon,extension:item.extension}); toast('Agregado a favoritos','success'); }
+  storageSet('xtream_favorites', state.favorites);
+}
+function progressKey(type,id){ return `${type}_${id}`; }
+function saveProgress(key, data){ state.progress[key]=data; storageSet('xtream_progress', state.progress); }
+function removeProgress(key){ delete state.progress[key]; storageSet('xtream_progress', state.progress); }
+
+/* ========================= PARENTAL CONTROL ========================= */
+const ADULT_KEYWORDS = ['xxx','adult','+18','18+','porn','para adultos','hot tv','hentai'];
+function isAdultCategoryName(name){
+  const n = (name||'').toLowerCase();
+  return ADULT_KEYWORDS.some(k=>n.includes(k));
+}
+function computeAdultCategories(type, cats){
+  state.adultCategoryIds[type] = new Set((cats||[]).filter(c=>isAdultCategoryName(c.category_name)).map(c=>String(c.category_id)));
+}
+function isCategoryLocked(type, catId){
+  if(!state.parental.enabled || state.parental.unlocked) return false;
+  const set = state.adultCategoryIds[type];
+  return !!(set && set.has(String(catId)));
+}
+function getVisibleContent(type){
+  const all = state.content[type]||[];
+  if(!state.parental.enabled || state.parental.unlocked) return all;
+  const lockedSet = state.adultCategoryIds[type] || new Set();
+  return all.filter(i=>!lockedSet.has(String(i.category_id)));
+}
+function loadParentalState(){
+  const saved = storageGet('xtream_parental', {enabled:false, pin:''});
+  state.parental = { enabled: !!saved.enabled, pin: saved.pin||'', unlocked:false };
+}
+function saveParentalState(){
+  storageSet('xtream_parental', {enabled: state.parental.enabled, pin: state.parental.pin});
+}
+function refreshVisibleContent(){
+  if(state.currentTab==='live'){ renderLiveCategories(); renderChannelsList(state.currentCategory); }
+  else if(state.currentTab==='movies' || state.currentTab==='series'){ renderVodCategories(); applyVodFilters(); }
+}
+function openParentalModal(){
+  document.getElementById('profile-dropdown').classList.add('hidden');
+  document.getElementById('parental-modal').classList.remove('hidden');
+  renderParentalModal();
+}
+function closeParentalModal(){ document.getElementById('parental-modal').classList.add('hidden'); }
+function renderParentalModal(){
+  const box = document.getElementById('parental-modal-box');
+  const p = state.parental;
+  let inner = '';
+  if(!p.pin){
+    inner = `
+      <h2>🔒 Configurar Control Parental</h2>
+      <p class="login-card-sub">Crea un PIN de 4 a 6 dígitos para restringir automáticamente categorías de contenido para adultos.</p>
+      <div id="parental-error" class="login-error hidden"></div>
+      <label>Nuevo PIN</label>
+      <div class="input-wrap"><span class="input-icon">🔢</span><input type="password" id="pp-new-pin" maxlength="6" inputmode="numeric" placeholder="••••"></div>
+      <label>Confirmar PIN</label>
+      <div class="input-wrap"><span class="input-icon">🔢</span><input type="password" id="pp-confirm-pin" maxlength="6" inputmode="numeric" placeholder="••••"></div>
+      <button class="btn-primary" id="pp-save" style="justify-content:center;">Guardar y Activar</button>`;
+  } else if(!p.enabled){
+    inner = `
+      <h2>🔒 Control Parental</h2>
+      <p class="login-card-sub">Ya tienes un PIN configurado, pero la protección está desactivada.</p>
+      <button class="btn-primary" id="pp-enable" style="justify-content:center;">Activar protección</button>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="pp-change-pin">Cambiar PIN</button>
+        <button class="btn-ghost" id="pp-remove-pin">Eliminar PIN</button>
+      </div>`;
+  } else if(!p.unlocked){
+    inner = `
+      <h2>🔒 Protección Activada</h2>
+      <p class="login-card-sub">Ingresa tu PIN para desbloquear el contenido restringido en esta sesión.</p>
+      <div id="parental-error" class="login-error hidden"></div>
+      <div class="input-wrap"><span class="input-icon">🔢</span><input type="password" id="pp-unlock-pin" maxlength="6" inputmode="numeric" placeholder="PIN"></div>
+      <button class="btn-primary" id="pp-unlock" style="justify-content:center;">Desbloquear</button>
+      <div class="modal-actions"><button class="btn-ghost" id="pp-disable">Desactivar protección</button></div>`;
+  } else {
+    inner = `
+      <h2>✅ Contenido Desbloqueado</h2>
+      <p class="login-card-sub">El contenido restringido está visible durante esta sesión.</p>
+      <button class="btn-primary" id="pp-relock" style="justify-content:center;">Bloquear ahora</button>
+      <div class="modal-actions"><button class="btn-ghost" id="pp-disable">Desactivar protección</button></div>`;
+  }
+  box.innerHTML = `<button class="modal-close" id="parental-close">✕</button>${inner}`;
+  document.getElementById('parental-close').onclick = closeParentalModal;
+  wireParentalActions();
+}
+function wireParentalActions(){
+  const p = state.parental;
+  const errBox = ()=>document.getElementById('parental-error');
+  const showErr = (msg)=>{ const e=errBox(); if(e){ e.textContent=msg; e.classList.remove('hidden'); } };
+
+  const saveBtn = document.getElementById('pp-save');
+  if(saveBtn) saveBtn.onclick = ()=>{
+    const a = document.getElementById('pp-new-pin').value.trim();
+    const b = document.getElementById('pp-confirm-pin').value.trim();
+    if(!/^\d{4,6}$/.test(a)){ showErr('El PIN debe tener entre 4 y 6 dígitos.'); return; }
+    if(a!==b){ showErr('Los PIN no coinciden.'); return; }
+    p.pin=a; p.enabled=true; p.unlocked=false; saveParentalState();
+    toast('Control parental activado','success'); renderParentalModal(); refreshVisibleContent();
+  };
+  const enableBtn = document.getElementById('pp-enable');
+  if(enableBtn) enableBtn.onclick = ()=>{ p.enabled=true; p.unlocked=false; saveParentalState(); toast('Protección activada','success'); renderParentalModal(); refreshVisibleContent(); };
+  const changeBtn = document.getElementById('pp-change-pin');
+  if(changeBtn) changeBtn.onclick = ()=>{
+    const oldPin = prompt('Ingresa tu PIN actual:');
+    if(oldPin===null) return;
+    if(oldPin !== p.pin){ toast('PIN incorrecto','error'); return; }
+    const newPin = prompt('Ingresa el nuevo PIN (4-6 dígitos):');
+    if(!newPin) return;
+    if(!/^\d{4,6}$/.test(newPin)){ toast('PIN inválido','error'); return; }
+    p.pin=newPin; saveParentalState(); toast('PIN actualizado','success');
+  };
+  const removeBtn = document.getElementById('pp-remove-pin');
+  if(removeBtn) removeBtn.onclick = ()=>{
+    const oldPin = prompt('Ingresa tu PIN actual para eliminarlo:');
+    if(oldPin===null) return;
+    if(oldPin !== p.pin){ toast('PIN incorrecto','error'); return; }
+    p.pin=''; p.enabled=false; p.unlocked=false; saveParentalState();
+    toast('Control parental eliminado','info'); renderParentalModal(); refreshVisibleContent();
+  };
+  const unlockBtn = document.getElementById('pp-unlock');
+  if(unlockBtn) unlockBtn.onclick = ()=>{
+    const val = document.getElementById('pp-unlock-pin').value.trim();
+    if(val !== p.pin){ showErr('PIN incorrecto.'); return; }
+    p.unlocked=true; toast('Contenido desbloqueado','success'); renderParentalModal(); refreshVisibleContent();
+  };
+  const relockBtn = document.getElementById('pp-relock');
+  if(relockBtn) relockBtn.onclick = ()=>{ p.unlocked=false; toast('Contenido bloqueado nuevamente','info'); renderParentalModal(); refreshVisibleContent(); };
+  const disableBtn = document.getElementById('pp-disable');
+  if(disableBtn) disableBtn.onclick = ()=>{
+    const val = prompt('Ingresa tu PIN para desactivar la protección:');
+    if(val===null) return;
+    if(val !== p.pin){ toast('PIN incorrecto','error'); return; }
+    p.enabled=false; p.unlocked=false; saveParentalState();
+    toast('Protección desactivada','info'); renderParentalModal(); refreshVisibleContent();
+  };
+}
+
+/* ========================= REFRESH CONTENT ========================= */
+async function refreshAllContent(){
+  document.getElementById('profile-dropdown').classList.add('hidden');
+  toast('Actualizando contenido...','info');
+  state.loaded = {};
+  state.content = {};
+  state.categories = {};
+  state.counts = {};
+  state.adultCategoryIds = {};
+  try{
+    state.currentCategory = null;
+    if(state.currentTab==='live') await openLiveTab();
+    else if(state.currentTab==='movies') await openVodTab('movie');
+    else if(state.currentTab==='series') await openVodTab('series');
+    toast('Contenido actualizado correctamente','success');
+  }catch(e){ toast('Error al actualizar contenido','error'); }
+}
+
+/* ========================= DATA LOADING ========================= */
+async function ensureTypeLoaded(type){
+  if(state.loaded[type]) return;
+  const catAction = {live:'get_live_categories', movie:'get_vod_categories', series:'get_series_categories'}[type];
+  const listAction = {live:'get_live_streams', movie:'get_vod_streams', series:'get_series'}[type];
+  const [cats, all] = await Promise.all([xtreamFetch(catAction), xtreamFetch(listAction)]);
+  state.categories[type] = Array.isArray(cats)?cats:[];
+  computeAdultCategories(type, state.categories[type]);
+  const normalized = (Array.isArray(all)?all:[]).map(normalizeItem);
+  state.content[type] = normalized;
+  const counts = {};
+  normalized.forEach(it=>{ counts[it.category_id] = (counts[it.category_id]||0)+1; });
+  state.counts[type] = counts;
+  state.loaded[type] = true;
+}
+
+/* ========================= RENDER: CATEGORIES ========================= */
+function renderCategoriesCol(container, type, activeId, onSelect){
+  const catsAll = state.categories[type]||[];
+  const cats = catsAll.filter(c=>!isCategoryLocked(type, c.category_id));
+  const counts = state.counts[type]||{};
+  const total = getVisibleContent(type).length;
+  container.innerHTML = `
+    <div class="cat-search"><input placeholder="Buscar categorías..." id="cs-${type}"></div>
+    <div class="cat-list" id="cl-${type}">
+      <div class="cat-item ${!activeId?'active':''}" data-id="">Todos <span class="badge">${total}</span></div>
+      ${cats.map(c=>`<div class="cat-item ${String(activeId)===String(c.category_id)?'active':''}" data-id="${esc(c.category_id)}">${esc(c.category_name)} <span class="badge">${counts[c.category_id]||0}</span></div>`).join('')}
+    </div>`;
+  container.querySelectorAll('.cat-item').forEach(el=>{
+    el.onclick = ()=> onSelect(el.dataset.id || null);
+  });
+  container.querySelector(`#cs-${type}`).oninput = (e)=>{
+    const q = e.target.value.toLowerCase();
+    container.querySelectorAll('.cat-item').forEach(el=>{
+      el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  };
+}
+
+/* ========================= LIVE TV ========================= */
+function stopLiveVideo(){
+  const video = document.getElementById('live-video');
+  if(!video) return;
+  try{ video.pause(); }catch(e){}
+  if(video._hls){ try{ video._hls.destroy(); }catch(e){} video._hls=null; }
+  video.removeAttribute('src');
+  try{ video.load(); }catch(e){}
+  clearInterval(video._progressInterval);
+  state.currentChannelId = null;
+}
+async function openLiveTab(){
+  document.getElementById('live-current-title').textContent = 'Selecciona un canal';
+  document.getElementById('live-current-sub').textContent = 'TV en vivo';
+  try{ await ensureTypeLoaded('live'); }catch(e){ toast('Error cargando canales','error'); return; }
+  renderLiveCategories();
+  renderChannelsList(state.currentCategory);
+}
+function renderLiveCategories(){
+  renderCategoriesCol(document.getElementById('live-categories-col'), 'live', state.currentCategory, (catId)=>{
+    state.currentCategory = catId;
+    renderLiveCategories();
+    renderChannelsList(catId);
+    setSectionForView('view-live','channels');
+  });
+}
+function renderChannelsList(catId){
+  const list = catId ? state.content.live.filter(c=>String(c.category_id)===String(catId)) : getVisibleContent('live');
+  state.liveChannels = list;
+  const col = document.getElementById('live-channels-col');
+  col.innerHTML = `<div class="cat-search"><input placeholder="Buscar canal..." id="live-search"></div><div id="live-list"></div>`;
+  const renderList = (items)=>{
+    document.getElementById('live-list').innerHTML = items.map(ch=>`
+      <div class="channel-item ${state.currentChannelId===ch.id?'active':''}" data-id="${ch.id}">
+        <img src="${esc(ch.icon)}" onerror="this.src='logo.png'">
+        <span>${esc(ch.name)}</span>
+      </div>`).join('') || '<p style="color:var(--text-dim);font-size:.8rem;padding:1rem 0;">No hay canales.</p>';
+    document.querySelectorAll('#live-list .channel-item').forEach(el=>{
+      el.onclick = ()=>{
+        const ch = list.find(c=>String(c.id)===el.dataset.id);
+        if(ch) playLive(ch);
+        document.querySelectorAll('#live-list .channel-item').forEach(x=>x.classList.remove('active'));
+        el.classList.add('active');
+        setSectionForView('view-live','player');
+      };
+    });
+  };
+  renderList(list);
+  document.getElementById('live-search').oninput = (e)=>{
+    const q = e.target.value.toLowerCase();
+    renderList(list.filter(c=>c.name.toLowerCase().includes(q)));
+  };
+}
+function playLive(channel){
+  state.currentChannelId = channel.id;
+  document.getElementById('live-current-title').textContent = channel.name;
+  document.getElementById('live-current-sub').textContent = 'TV en Vivo · HLS';
+  const favBtn = document.getElementById('live-fav-btn');
+  const fav = isFavorite('live', channel.id);
+  favBtn.textContent = fav ? '❤️ Favorito' : '🤍 Favorito';
+  favBtn.onclick = ()=>{ toggleFavorite('live', channel); favBtn.textContent = isFavorite('live',channel.id)?'❤️ Favorito':'🤍 Favorito'; };
+
+  const url = buildStreamUrl('live', channel.id, 'm3u8');
+  const video = document.getElementById('live-video');
+  initHlsPlayer(video, url, { isLive:true, controller: state.liveController, url });
+  loadEpg(channel.id);
+}
+async function loadEpg(streamId){
+  const box = document.getElementById('epg-content');
+  box.innerHTML = '<p style="color:var(--text-dim);font-size:.8rem;">Cargando programación...</p>';
+  try{
+    const res = await xtreamFetch('get_short_epg', {stream_id:streamId, limit:2});
+    const list = res && res.epg_listings ? res.epg_listings : [];
+    if(!list.length){ box.innerHTML = '<p style="color:var(--text-dim);font-size:.8rem;">No hay información de EPG disponible.</p>'; return; }
+    box.innerHTML = list.map((ep,i)=>{
+      const title = decodeEpg(ep.title);
+      const desc = decodeEpg(ep.description);
+      const start = ep.start_timestamp ? parseInt(ep.start_timestamp)*1000 : (ep.start? new Date(ep.start.replace(' ','T')).getTime() : null);
+      const stop = ep.stop_timestamp ? parseInt(ep.stop_timestamp)*1000 : (ep.end? new Date(ep.end.replace(' ','T')).getTime() : null);
+      let pctHtml = '';
+      if(i===0 && start && stop){
+        const now = Date.now();
+        const pct = Math.min(100, Math.max(0, ((now-start)/(stop-start))*100));
+        pctHtml = `<div class="epg-progress"><div class="epg-progress-bar" style="width:${pct}%"></div></div>`;
+      }
+      const timeStr = (ep.start||'').split(' ')[1] ? `${(ep.start||'').split(' ')[1].slice(0,5)} - ${(ep.end||'').split(' ')[1]?.slice(0,5)||''}` : '';
+      return `<div class="epg-entry">
+        <span class="epg-tag ${i===0?'now':'next'}">${i===0?'AHORA':'SIGUIENTE'}</span>
+        <span class="epg-time">${timeStr}</span>
+        <div style="font-weight:600;font-size:.85rem;margin-top:.4rem;">${esc(title)}</div>
+        ${desc?`<p>${esc(desc)}</p>`:''}
+        ${pctHtml}
+      </div>`;
+    }).join('');
+  }catch(e){ box.innerHTML = '<p style="color:var(--text-dim);font-size:.8rem;">No se pudo cargar la EPG.</p>'; }
+}
+
+/* ========================= VOD (movies / series) ========================= */
+async function openVodTab(type){
+  state.currentType = type;
+  document.getElementById('vod-title').textContent = type==='movie' ? 'Películas' : 'Series';
+  try{ await ensureTypeLoaded(type); }catch(e){ toast('Error cargando contenido','error'); return; }
+  renderVodCategories();
+  state.vodRenderCount = 60;
+  applyVodFilters();
+}
+function renderVodCategories(){
+  const type = state.currentType;
+  renderCategoriesCol(document.getElementById('vod-categories-col'), type, state.currentCategory, (catId)=>{
+    state.currentCategory = catId; state.vodRenderCount = 60;
+    renderVodCategories();
+    applyVodFilters();
+    setSectionForView('view-vod','grid');
+  });
+}
+function applyVodFilters(){
+  const type = state.currentType;
+  let items = state.currentCategory ? state.content[type].filter(i=>String(i.category_id)===String(state.currentCategory)) : getVisibleContent(type);
+  const q = (document.getElementById('vod-search').value||'').toLowerCase();
+  if(q) items = items.filter(i=>i.name.toLowerCase().includes(q));
+  const sort = document.getElementById('vod-sort').value;
+  items = items.slice();
+  if(sort==='az') items.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sort==='za') items.sort((a,b)=>b.name.localeCompare(a.name));
+  else if(sort==='rating') items.sort((a,b)=>(b.rating||0)-(a.rating||0));
+  else if(sort==='recent') items.sort((a,b)=>(b.added||0)-(a.added||0));
+  state.vodFiltered = items;
+  document.getElementById('vod-count').textContent = `${items.length} elementos`;
+  renderVodGrid();
+}
+function renderVodGrid(){
+  const grid = document.getElementById('vod-grid');
+  const type = state.currentType;
+  const slice = state.vodFiltered.slice(0, state.vodRenderCount);
+  grid.classList.toggle('list-mode', state.viewMode.vod==='list');
+  if(!slice.length){ grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="em-icon">🔍</div><p>No se encontraron resultados.</p></div>`; document.getElementById('vod-load-more-wrap').classList.add('hidden'); return; }
+  grid.innerHTML = slice.map(item=>cardTemplate(item, type)).join('');
+  wireCardEvents(grid, type);
+  const moreWrap = document.getElementById('vod-load-more-wrap');
+  moreWrap.classList.toggle('hidden', state.vodRenderCount >= state.vodFiltered.length);
+}
+document.addEventListener('click', (e)=>{
+  if(e.target && e.target.id==='vod-load-more'){ state.vodRenderCount += 60; renderVodGrid(); }
+});
+
+function cardTemplate(item, type, progressPct){
+  const fav = isFavorite(type, item.id);
+  const poster = item.icon || 'logo.png';
+  const ratingHtml = item.rating ? `<span class="card-rating">⭐ ${item.rating.toFixed(1)}</span>` : '';
+  const isNew = item.added && (Date.now()/1000 - item.added) < 7*24*3600;
+  const progHtml = (progressPct!=null) ? `<div class="card-progress"><div class="card-progress-bar" style="width:${progressPct}%"></div></div>` : '';
+  return `<div class="card" data-type="${type}" data-id="${item.id}">
+    <div class="card-poster-wrap">
+      <img class="card-poster" src="${esc(poster)}" loading="lazy" onerror="this.src='logo.png'">
+      ${ratingHtml}
+      ${isNew?'<span class="card-badge-new">NUEVO</span>':''}
+      <button class="card-fav ${fav?'active':''}" data-favbtn="1">${fav?'❤️':'🤍'}</button>
+      <div class="card-overlay"><span class="card-play">▶️</span></div>
+      ${progHtml}
+    </div>
+    <div class="card-title">${esc(item.name)}</div>
+  </div>`;
+}
+function wireCardEvents(container, forcedType){
+  container.querySelectorAll('.card').forEach(card=>{
+    const type = card.dataset.type || forcedType;
+    const id = card.dataset.id;
+    card.querySelector('[data-favbtn]').onclick = (e)=>{
+      e.stopPropagation();
+      const item = findItemAnySource(type, id);
+      if(item){ toggleFavorite(type, item); refreshFavButtons(); }
+    };
+    card.onclick = ()=>{
+      const item = findItemAnySource(type, id);
+      if(!item) return;
+      if(type==='live') playLiveFromCard(item);
+      else openInfoModal(type, item);
+    };
+  });
+}
+function refreshFavButtons(){
+  document.querySelectorAll('.card').forEach(card=>{
+    const type = card.dataset.type, id = card.dataset.id;
+    const btn = card.querySelector('[data-favbtn]');
+    if(!btn) return;
+    const fav = isFavorite(type,id);
+    btn.classList.toggle('active', fav);
+    btn.textContent = fav?'❤️':'🤍';
+  });
+}
+function findItemAnySource(type, id){
+  if(type==='live'){
+    return (state.content.live||[]).find(i=>String(i.id)===String(id)) || state.favorites.find(f=>f.type==='live'&&String(f.id)===String(id));
+  }
+  const inType = (state.content[type]||[]).find(i=>String(i.id)===String(id));
+  if(inType) return inType;
+  const favItem = state.favorites.find(f=>f.type===type && String(f.id)===String(id));
+  if(favItem) return favItem;
+  const prog = Object.values(state.progress).find(p=>p.type===type && String(p.id)===String(id));
+  return prog || null;
+}
+function playLiveFromCard(item){
+  switchTab('live');
+  setTimeout(()=>{ playLive(item); }, 150);
+}
+
+/* ========================= FAVORITES / CONTINUE (simple grid) ========================= */
+function openSimpleTab(mode){
+  document.getElementById('simple-title').textContent = mode==='favorites' ? '❤️ Mis Favoritos' : '🕒 Continuar Viendo';
+  renderSimpleGrid(mode);
+}
+function renderSimpleGrid(mode){
+  const grid = document.getElementById('simple-grid');
+  let items = [];
+  if(mode==='favorites'){
+    items = state.favorites.map(f=>({...f, __progress:null}));
+  } else {
+    items = Object.values(state.progress).map(p=>({...p, __progress: p.duration ? (p.time/p.duration*100) : 0}))
+      .sort((a,b)=>(b.lastUpdated||0)-(a.lastUpdated||0));
+  }
+  if(state.simpleFilter!=='all') items = items.filter(i=>i.type===state.simpleFilter);
+  const q = (document.getElementById('simple-search').value||'').toLowerCase();
+  if(q) items = items.filter(i=>(i.name||'').toLowerCase().includes(q));
+  document.getElementById('simple-count').textContent = `${items.length} elementos`;
+  grid.classList.toggle('list-mode', state.viewMode.simple==='list');
+  if(!items.length){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="em-icon">${mode==='favorites'?'🤍':'🕒'}</div><p>${mode==='favorites'?'Aún no tienes favoritos.':'No hay contenido en progreso.'}</p></div>`;
+    return;
+  }
+  grid.innerHTML = items.map(it=>cardTemplate(it, it.type, it.__progress)).join('');
+  container_wireSimple(grid);
+  state._simpleMode = mode;
+}
+function container_wireSimple(grid){
+  grid.querySelectorAll('.card').forEach(card=>{
+    const type = card.dataset.type, id = card.dataset.id;
+    card.querySelector('[data-favbtn]').onclick = (e)=>{
+      e.stopPropagation();
+      const item = findItemAnySource(type, id);
+      if(item){ toggleFavorite(type, item); renderSimpleGrid(state._simpleMode); }
+    };
+    card.onclick = ()=>{
+      const item = findItemAnySource(type, id);
+      if(!item){ toast('Contenido no disponible','error'); return; }
+      if(type==='live') playLiveFromCard(item);
+      else openInfoModal(type, item);
+    };
+  });
+}
+
+/* ========================= INFO MODAL ========================= */
+async function openInfoModal(type, item){
+  const overlay = document.getElementById('info-modal');
+  const box = document.getElementById('info-modal-box');
+  overlay.classList.remove('hidden');
+  box.innerHTML = `<button class="modal-close" id="info-modal-close">✕</button>
+    <div class="skeleton-modal"><div class="skeleton-card sk-a"></div><div class="skeleton-card sk-b"></div></div>`;
+  wireModalClose();
+
+  let plot='', cast='', director='', genre='', rating=item.rating, releaseDate='', duration='', backdrop=item.icon, poster=item.icon, episodesData=null;
+  try{
+    if(type==='movie'){
+      const res = await xtreamFetch('get_vod_info', {vod_id:item.id});
+      const d = (res && res.info) || {};
+      plot = d.plot || d.description || '';
+      cast = d.cast || ''; director = d.director || ''; genre = d.genre || '';
+      rating = parseFloat(d.rating || d.rating_imdb || rating || 0) || null;
+      releaseDate = d.releasedate || d.release_date || '';
+      duration = d.duration || '';
+      backdrop = (d.backdrop_path && d.backdrop_path[0]) || d.movie_image || d.cover_big || backdrop;
+      poster = d.movie_image || d.cover_big || poster;
+      if(res && res.movie_data && res.movie_data.container_extension) item.extension = res.movie_data.container_extension;
+    } else if(type==='series'){
+      const res = await xtreamFetch('get_series_info', {series_id:item.id});
+      const d = (res && res.info) || {};
+      plot = d.plot || ''; cast = d.cast || ''; director = d.director || ''; genre = d.genre || '';
+      rating = parseFloat(d.rating || rating || 0) || null;
+      releaseDate = d.releaseDate || d.releasedate || '';
+      backdrop = (d.backdrop_path && d.backdrop_path[0]) || d.cover || backdrop;
+      poster = d.cover || poster;
+      episodesData = (res && res.episodes) || {};
+    }
+  }catch(e){ toast('No se pudo cargar toda la información','error'); }
+
+  const stars = rating ? starsHtml(rating) : '';
+  const metaParts = [];
+  if(genre) metaParts.push(`<span>${esc(genre)}</span>`);
+  if(releaseDate) metaParts.push(`<span>${esc(String(releaseDate).slice(0,4))}</span>`);
+  if(duration) metaParts.push(`<span>${esc(duration)}</span>`);
+
+  let seasonsHtml = '', episodesHtml = '', actionsHtml = '';
+  if(type==='series' && episodesData && Object.keys(episodesData).length){
+    const seasonKeys = Object.keys(episodesData);
+    const firstSeason = seasonKeys[0];
+    seasonsHtml = `<div class="modal-seasons">${seasonKeys.map((s,i)=>`<button class="season-btn ${i===0?'active':''}" data-season="${esc(s)}">Temporada ${esc(s)}</button>`).join('')}</div>`;
+    episodesHtml = `<div class="modal-episodes" id="modal-episodes"></div>`;
+    actionsHtml = `<div class="modal-actions"><button class="btn-ghost" id="modal-fav-btn">${isFavorite('series',item.id)?'❤️ En favoritos':'🤍 Favoritos'}</button></div>`;
+  } else {
+    actionsHtml = `<div class="modal-actions">
+      <button class="btn-primary" id="modal-play-btn">▶️ Reproducir</button>
+      <button class="btn-ghost" id="modal-fav-btn">${isFavorite(type,item.id)?'❤️ En favoritos':'🤍 Favoritos'}</button>
+    </div>`;
+  }
+
+  box.innerHTML = `
+    <button class="modal-close" id="info-modal-close">✕</button>
+    <div class="modal-backdrop" style="background-image:url('${esc(backdrop)}')"></div>
+    <div class="modal-body">
+      <img class="modal-poster" src="${esc(poster)}" onerror="this.src='logo.png'">
+      <div class="modal-details">
+        <h2>${esc(item.name)}</h2>
+        <div class="modal-meta">${metaParts.join('')}</div>
+        ${stars ? `<div class="modal-rating">${stars} <span>${rating.toFixed(1)}</span></div>` : ''}
+        ${plot ? `<p class="modal-plot">${esc(plot)}</p>` : ''}
+        ${cast ? `<p class="modal-cast"><b>Reparto:</b> ${esc(cast)}</p>` : ''}
+        ${director ? `<p class="modal-director"><b>Director:</b> ${esc(director)}</p>` : ''}
+        ${actionsHtml}
+        ${seasonsHtml}
+        ${episodesHtml}
+      </div>
+    </div>`;
+  wireModalClose();
+
+  const favBtn = document.getElementById('modal-fav-btn');
+  if(favBtn) favBtn.onclick = ()=>{
+    toggleFavorite(type, {...item, extension:item.extension});
+    favBtn.textContent = isFavorite(type,item.id) ? '❤️ En favoritos' : '🤍 Favoritos';
+    refreshFavButtons();
+  };
+  const playBtn = document.getElementById('modal-play-btn');
+  if(playBtn) playBtn.onclick = ()=>{
+    closeInfoModal();
+    const url = buildStreamUrl(type, item.id, item.extension);
+    const saved = state.progress[progressKey(type,item.id)];
+    openCinema({ type, id:item.id, title:item.name, subtitle:'', url, extension:item.extension, icon:poster, resumeTime: saved?saved.time:0 });
+  };
+
+  if(type==='series' && episodesData){
+    let currentSeason = Object.keys(episodesData)[0];
+    const seriesCtx = { item:{...item, poster}, episodesData, currentSeason };
+    function renderSeasonEpisodes(season){
+      currentSeason = season; seriesCtx.currentSeason = season;
+      const eps = episodesData[season] || [];
+      document.getElementById('modal-episodes').innerHTML = eps.map(ep=>`
+        <div class="modal-ep-row" data-epid="${ep.id}">
+          <img src="${esc((ep.info&&ep.info.movie_image)||poster)}" onerror="this.src='logo.png'">
+          <div><div class="me-title">E${esc(ep.episode_num)} · ${esc(ep.title||('Episodio '+ep.episode_num))}</div><div class="me-sub">Temporada ${esc(season)}</div></div>
+          <span class="modal-ep-play">▶️</span>
+        </div>`).join('') || '<p style="color:var(--text-dim);font-size:.8rem;">Sin episodios.</p>';
+      document.querySelectorAll('.modal-ep-row').forEach(row=>{
+        row.onclick = ()=>{
+          const ep = eps.find(e=>String(e.id)===row.dataset.epid);
+          closeInfoModal();
+          playSeriesEpisode(seriesCtx, ep);
+        };
+      });
+    }
+    renderSeasonEpisodes(currentSeason);
+    document.querySelectorAll('.season-btn').forEach(btn=>{
+      btn.onclick = ()=>{
+        document.querySelectorAll('.season-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        renderSeasonEpisodes(btn.dataset.season);
+      };
+    });
+  }
+}
+function starsHtml(rating){
+  const n = Math.round(rating/2);
+  let s='';
+  for(let i=0;i<5;i++) s += i<n ? '★' : '☆';
+  return s;
+}
+function wireModalClose(){
+  const btn = document.getElementById('info-modal-close');
+  if(btn) btn.onclick = closeInfoModal;
+}
+function closeInfoModal(){ document.getElementById('info-modal').classList.add('hidden'); }
+
+/* ========================= CINEMA PLAYER ========================= */
+function openCinema(meta){
+  stopLiveVideo(); // asegura que el reproductor de TV en vivo no siga consumiendo recursos en segundo plano
+  document.getElementById('cinema-overlay').classList.remove('hidden');
+  document.getElementById('cinema-title').textContent = meta.title;
+  document.getElementById('cinema-subtitle').textContent = meta.subtitle||'';
+  const sidebar = document.getElementById('episodes-sidebar');
+  if(meta.seriesContext){ sidebar.classList.remove('hidden'); renderEpisodesSidebar(meta.seriesContext, meta.id); }
+  else sidebar.classList.add('hidden');
+  const video = document.getElementById('cinema-video');
+  initHlsPlayer(video, meta.url, {
+    controller: state.cinemaController, url: meta.url, resumeTime: meta.resumeTime,
+    progressKey: progressKey(meta.type, meta.id),
+    meta: { type:meta.type, id:meta.id, name:meta.title, icon:meta.icon, extension:meta.extension, seriesId: meta.seriesContext?meta.seriesContext.item.id:null, season: meta.seriesContext?meta.seriesContext.currentSeason:null },
+    onEnded: ()=>handlePlaybackEnded(meta)
+  });
+}
+function renderEpisodesSidebar(seriesCtx, activeId){
+  const eps = seriesCtx.episodesData[seriesCtx.currentSeason] || [];
+  document.getElementById('episodes-list').innerHTML = eps.map(ep=>`
+    <div class="episode-row ${String(ep.id)===String(activeId)?'active':''}" data-epid="${ep.id}">
+      <img src="${esc((ep.info&&ep.info.movie_image)||seriesCtx.item.poster||'logo.png')}" onerror="this.src='logo.png'">
+      <div><div class="ep-num">T${esc(seriesCtx.currentSeason)} · E${esc(ep.episode_num)}</div><div class="ep-title">${esc(ep.title||'')}</div></div>
+    </div>`).join('');
+  document.querySelectorAll('.episode-row').forEach(row=>{
+    row.onclick = ()=>{
+      const ep = eps.find(e=>String(e.id)===row.dataset.epid);
+      playSeriesEpisode(seriesCtx, ep);
+    };
+  });
+}
+function playSeriesEpisode(seriesCtx, episode){
+  const eps = seriesCtx.episodesData[seriesCtx.currentSeason] || [];
+  const idx = eps.findIndex(e=>String(e.id)===String(episode.id));
+  let next = eps[idx+1] || null;
+  const url = buildStreamUrl('series', episode.id, episode.container_extension);
+  const saved = state.progress[progressKey('series', episode.id)];
+  openCinema({
+    type:'series', id:episode.id,
+    title: seriesCtx.item.name,
+    subtitle: `Temporada ${seriesCtx.currentSeason} · Episodio ${episode.episode_num} - ${episode.title||''}`,
+    url, extension: episode.container_extension,
+    icon: (episode.info&&episode.info.movie_image) || seriesCtx.item.poster,
+    resumeTime: saved?saved.time:0,
+    seriesContext: seriesCtx,
+    nextEpisode: next,
+  });
+}
+function handlePlaybackEnded(meta){
+  if(!meta.seriesContext || !meta.nextEpisode){ return; }
+  const toastEl = document.getElementById('next-ep-toast');
+  toastEl.classList.remove('hidden');
+  let count = 5;
+  document.getElementById('next-ep-count').textContent = count;
+  const interval = setInterval(()=>{
+    count--; document.getElementById('next-ep-count').textContent = count;
+    if(count<=0){ clearInterval(interval); toastEl.classList.add('hidden'); playSeriesEpisode(meta.seriesContext, meta.nextEpisode); }
+  }, 1000);
+  document.getElementById('next-ep-cancel').onclick = ()=>{ clearInterval(interval); toastEl.classList.add('hidden'); };
+  document.getElementById('next-ep-now').onclick = ()=>{ clearInterval(interval); toastEl.classList.add('hidden'); playSeriesEpisode(meta.seriesContext, meta.nextEpisode); };
+}
+function closeCinema(){
+  const video = document.getElementById('cinema-video');
+  try{ video.pause(); }catch(e){}
+  if(video._hls){ try{video._hls.destroy();}catch(e){} video._hls=null; }
+  video.removeAttribute('src');
+  clearInterval(video._progressInterval);
+  document.getElementById('cinema-overlay').classList.add('hidden');
+}
+
+/* ========================= HLS PLAYER CORE ========================= */
+function createController(video, root, opts={}){
+  const playBtn = root.querySelector('.pc-play');
+  const seek = root.querySelector('.pc-seek');
+  const timeEl = root.querySelector('.pc-time');
+  const muteBtn = root.querySelector('.pc-mute');
+  const volume = root.querySelector('.pc-volume');
+  const qualityBtn = root.querySelector('.pc-quality');
+  const qualityMenu = root.querySelector('.pc-quality-menu');
+  const pipBtn = root.querySelector('.pc-pip');
+  const fsBtn = root.querySelector('.pc-fullscreen');
+  const liveBadge = root.querySelector('.pc-live-badge');
+  const container = root.closest('.player-container');
+
+  playBtn.onclick = ()=> video.paused ? video.play().catch(()=>{}) : video.pause();
+  video.addEventListener('play', ()=>playBtn.textContent='⏸️');
+  video.addEventListener('pause', ()=>playBtn.textContent='▶️');
+  video.addEventListener('timeupdate', ()=>{
+    const isLive = seek.style.display==='none';
+    if(!isLive && video.duration && isFinite(video.duration)){
+      seek.value = (video.currentTime/video.duration)*100;
+      timeEl.textContent = `${fmtTime(video.currentTime)} / ${fmtTime(video.duration)}`;
+    }
+  });
+  seek.addEventListener('input', ()=>{ if(video.duration) video.currentTime = (seek.value/100)*video.duration; });
+  muteBtn.onclick = ()=>{ video.muted = !video.muted; muteBtn.textContent = video.muted?'🔇':'🔊'; };
+  volume.addEventListener('input', ()=>{ video.volume = parseFloat(volume.value); video.muted=false; muteBtn.textContent = volume.value==0?'🔇':'🔊'; });
+  qualityBtn.onclick = ()=> qualityMenu.classList.toggle('hidden');
+  pipBtn.onclick = async ()=>{
+    try{ if(document.pictureInPictureElement) await document.exitPictureInPicture(); else await video.requestPictureInPicture(); }
+    catch(e){ toast('PIP no disponible en este contenido','error'); }
+  };
+  fsBtn.onclick = ()=>{ if(!document.fullscreenElement) container.requestFullscreen?.(); else document.exitFullscreen?.(); };
+
+  let hideTimer;
+  function showControls(){ root.classList.add('visible'); clearTimeout(hideTimer); hideTimer=setTimeout(()=>{ if(!video.paused) root.classList.remove('visible'); },3000); }
+  container.addEventListener('mousemove', showControls);
+  container.addEventListener('click', showControls);
+  showControls();
+
+  return {
+    setLiveMode(isLive){
+      seek.style.display = isLive ? 'none' : '';
+      timeEl.style.display = isLive ? 'none' : '';
+      liveBadge.style.display = isLive ? 'inline-flex' : 'none';
+    },
+    setLevels(hls){
+      if(!hls.levels || !hls.levels.length){ qualityMenu.innerHTML=''; return; }
+      qualityMenu.innerHTML = '<div class="pc-q-item active" data-level="-1">Auto</div>' +
+        hls.levels.map((l,i)=>`<div class="pc-q-item" data-level="${i}">${l.height}p</div>`).join('');
+      qualityMenu.querySelectorAll('.pc-q-item').forEach(it=>{
+        it.onclick = ()=>{
+          hls.currentLevel = parseInt(it.dataset.level);
+          qualityMenu.querySelectorAll('.pc-q-item').forEach(x=>x.classList.remove('active'));
+          it.classList.add('active');
+          qualityMenu.classList.add('hidden');
+        };
+      });
+    },
+    clearLevels(){ qualityMenu.innerHTML=''; }
+  };
+}
+
+function initHlsPlayer(video, url, options={}){
+  const wrap = video.parentElement;
+  const spinner = wrap.querySelector('.pc-spinner');
+  const errorBox = wrap.querySelector('.pc-error');
+  errorBox.classList.add('hidden');
+  spinner.classList.remove('hidden');
+  if(video._hls){ try{video._hls.destroy();}catch(e){} video._hls=null; }
+  clearInterval(video._progressInterval);
+  video.removeAttribute('src');
+
+  if(options.controller) options.controller.setLiveMode(!!options.isLive);
+
+  function onReady(){
+    spinner.classList.add('hidden');
+    if(options.resumeTime) video.currentTime = options.resumeTime;
+    video.play().catch(()=>{});
+  }
+
+  const isHlsStream = /\.m3u8($|\?)/i.test(url);
+
+  if(isHlsStream){
+    if(window.Hls && Hls.isSupported()){
+      const hls = new Hls({maxBufferLength:30});
+      video._hls = hls;
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ onReady(); options.controller && options.controller.setLevels(hls); });
+      hls.on(Hls.Events.ERROR, (evt,data)=>{
+        if(data && data.fatal){ spinner.classList.add('hidden'); showPlayerError(video, options); }
+      });
+    } else if(video.canPlayType('application/vnd.apple.mpegurl')){
+      video.src = url;
+      video.addEventListener('loadedmetadata', onReady, {once:true});
+      video.addEventListener('error', ()=>showPlayerError(video, options), {once:true});
+    } else {
+      toast('Tu navegador no soporta HLS','error');
+    }
+  } else {
+    options.controller && options.controller.clearLevels();
+    video.src = url;
+    video.addEventListener('loadedmetadata', onReady, {once:true});
+    video.addEventListener('error', ()=>{
+      spinner.classList.add('hidden');
+      showPlayerError(video, options);
+    }, {once:true});
+  }
+
+  video.onwaiting = ()=>spinner.classList.remove('hidden');
+  video.onplaying = ()=>spinner.classList.add('hidden');
+
+  if(options.progressKey){
+    video._progressInterval = setInterval(()=>{
+      if(video.duration && isFinite(video.duration) && !video.paused){
+        const pct = video.currentTime/video.duration;
+        if(pct < 0.95){ saveProgress(options.progressKey, {...options.meta, time:video.currentTime, duration:video.duration, lastUpdated:Date.now()}); }
+        else { removeProgress(options.progressKey); }
+      }
+    }, 5000);
+  }
+  video.onended = ()=>{
+    if(options.progressKey) removeProgress(options.progressKey);
+    options.onEnded && options.onEnded();
+  };
+}
+function showPlayerError(video, options){
+  const wrap = video.parentElement;
+  const errorBox = wrap.querySelector('.pc-error');
+  errorBox.classList.remove('hidden');
+  const retryBtn = errorBox.querySelector('button');
+  retryBtn.onclick = ()=>{ errorBox.classList.add('hidden'); initHlsPlayer(video, options.url, options); };
+}
+
+/* ========================= TAB / SECTION SWITCHING ========================= */
+function switchTab(tab){
+  if(state.currentTab === 'live' && tab !== 'live'){ stopLiveVideo(); }
+
+  state.currentTab = tab;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('view-live').classList.toggle('hidden', tab!=='live');
+  document.getElementById('view-vod').classList.toggle('hidden', !(tab==='movies'||tab==='series'));
+  document.getElementById('view-simple').classList.toggle('hidden', !(tab==='favorites'||tab==='continue'));
+  document.getElementById('topbar-nav').classList.remove('open');
+
+  state.currentCategory = null;
+  if(tab==='live'){ setSectionForView('view-live','categories'); openLiveTab(); }
+  else if(tab==='movies'){ setSectionForView('view-vod','categories'); openVodTab('movie'); }
+  else if(tab==='series'){ setSectionForView('view-vod','categories'); openVodTab('series'); }
+  else if(tab==='favorites') openSimpleTab('favorites');
+  else if(tab==='continue') openSimpleTab('continue');
+}
+function setSectionForView(viewId, section){
+  const view = document.getElementById(viewId);
+  if(!view) return;
+  view.dataset.section = section;
+  view.querySelectorAll(':scope > .mobile-subnav button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.section===section);
+  });
+}
+
+/* ========================= WIRING ========================= */
+function wireTopControls(){
+  document.getElementById('hamburger-btn').onclick = ()=>document.getElementById('topbar-nav').classList.toggle('open');
+  document.querySelectorAll('.nav-btn').forEach(btn=>btn.onclick=()=>switchTab(btn.dataset.tab));
+  document.getElementById('profile-btn').onclick = ()=>document.getElementById('profile-dropdown').classList.toggle('hidden');
+  document.getElementById('logout-btn').onclick = logout;
+  document.getElementById('refresh-content-btn').onclick = refreshAllContent;
+  document.getElementById('parental-btn').onclick = openParentalModal;
+  document.getElementById('shortcuts-btn').onclick = ()=>document.getElementById('shortcuts-modal').classList.remove('hidden');
+  document.getElementById('dropdown-shortcuts').onclick = ()=>{ document.getElementById('profile-dropdown').classList.add('hidden'); document.getElementById('shortcuts-modal').classList.remove('hidden'); };
+  document.getElementById('shortcuts-close').onclick = ()=>document.getElementById('shortcuts-modal').classList.add('hidden');
+  document.getElementById('cinema-back').onclick = closeCinema;
+  document.getElementById('vod-search').oninput = applyVodFilters;
+  document.getElementById('vod-sort').onchange = applyVodFilters;
+  document.getElementById('simple-search').oninput = ()=>renderSimpleGrid(state._simpleMode);
+
+  document.querySelectorAll('#live-subnav button').forEach(b=>{
+    b.onclick = ()=> setSectionForView('view-live', b.dataset.section);
+  });
+  document.querySelectorAll('#vod-subnav button').forEach(b=>{
+    b.onclick = ()=> setSectionForView('view-vod', b.dataset.section);
+  });
+
+  document.querySelectorAll('.view-toggle').forEach(vt=>{
+    vt.querySelectorAll('button').forEach(btn=>{
+      btn.onclick = ()=>{
+        vt.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        if(vt.closest('#view-vod')){ state.viewMode.vod = btn.dataset.view; renderVodGrid(); }
+        else { state.viewMode.simple = btn.dataset.view; renderSimpleGrid(state._simpleMode); }
+      };
+    });
+  });
+  document.querySelectorAll('#simple-filters .chip-filter').forEach(btn=>{
+    btn.onclick = ()=>{
+      document.querySelectorAll('#simple-filters .chip-filter').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.simpleFilter = btn.dataset.filter;
+      renderSimpleGrid(state._simpleMode);
+    };
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.profile-menu')) document.getElementById('profile-dropdown').classList.add('hidden');
+  });
+}
+function wireLoginForm(){
+  document.getElementById('toggle-pass').onclick = (e)=>{
+    const input = document.getElementById('input-password');
+    const isPass = input.type==='password';
+    input.type = isPass?'text':'password';
+    e.target.textContent = isPass?'🙈':'👁️';
+  };
+  document.getElementById('login-form').onsubmit = async (e)=>{
+    e.preventDefault();
+    const errBox = document.getElementById('login-error');
+    errBox.classList.add('hidden');
+    const btn = document.getElementById('login-submit');
+    btn.disabled = true; const oldHtml = btn.innerHTML; btn.innerHTML = '<span>Ingresando...</span>';
+    const session = {
+      server: document.getElementById('input-server').value.trim().replace(/\/$/,''),
+      username: document.getElementById('input-username').value.trim(),
+      password: document.getElementById('input-password').value.trim(),
+    };
+    try{
+      await loginWithSession(session, false);
+      enterApp();
+    }catch(err){
+      errBox.textContent = '❌ ' + (err.message || 'No se pudo iniciar sesión. Verifica tus datos.');
+      errBox.classList.remove('hidden');
+    }finally{
+      btn.disabled = false; btn.innerHTML = oldHtml;
+    }
+  };
+}
+function wireModals(){
+  document.querySelectorAll('.modal-overlay').forEach(ov=>{
+    ov.addEventListener('click', (e)=>{ if(e.target===ov) ov.classList.add('hidden'); });
+  });
+}
+function wireKeyboard(){
+  document.addEventListener('keydown', (e)=>{
+    const tag = (e.target.tagName||'').toLowerCase();
+    if(tag==='input' || tag==='select' || tag==='textarea') return;
+
+    if(e.key==='Escape'){
+      document.getElementById('shortcuts-modal').classList.add('hidden');
+      document.getElementById('parental-modal').classList.add('hidden');
+      if(!document.getElementById('info-modal').classList.contains('hidden')) closeInfoModal();
+      else if(!document.getElementById('cinema-overlay').classList.contains('hidden')) closeCinema();
+      return;
+    }
+    if(e.key==='?'){ document.getElementById('shortcuts-modal').classList.remove('hidden'); return; }
+
+    const cinemaOpen = !document.getElementById('cinema-overlay').classList.contains('hidden');
+    const video = cinemaOpen ? document.getElementById('cinema-video') : document.getElementById('live-video');
+    if(!video) return;
+
+    if(e.key===' '){ e.preventDefault(); video.paused?video.play().catch(()=>{}):video.pause(); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); video.volume = Math.min(1, video.volume+0.1); }
+    else if(e.key==='ArrowDown'){ e.preventDefault(); video.volume = Math.max(0, video.volume-0.1); }
+    else if(e.key==='ArrowLeft'){ if(video.duration) video.currentTime = Math.max(0, video.currentTime-10); }
+    else if(e.key==='ArrowRight'){ if(video.duration) video.currentTime = Math.min(video.duration, video.currentTime+10); }
+    else if(e.key.toLowerCase()==='f'){ const c = video.closest('.player-container'); if(!document.fullscreenElement) c.requestFullscreen?.(); else document.exitFullscreen?.(); }
+  });
+}
+
+/* ========================= ENTER APP ========================= */
+function enterApp(){
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  const u = state.userInfo || {};
+  const uname = state.session.username;
+  document.getElementById('profile-name').textContent = uname;
+  document.getElementById('avatar-letter').textContent = uname.charAt(0).toUpperCase();
+  document.getElementById('dropdown-username').textContent = uname;
+  let expiry = 'Sin información de vencimiento';
+  if(u.exp_date && u.exp_date !== '0'){
+    const d = new Date(parseInt(u.exp_date)*1000);
+    expiry = 'Vence: ' + d.toLocaleDateString();
+  } else if(u.exp_date==='0'){ expiry = 'Cuenta sin vencimiento'; }
+  document.getElementById('dropdown-expiry').textContent = expiry;
+
+  state.favorites = storageGet('xtream_favorites', []);
+  state.progress = storageGet('xtream_progress', {});
+  loadParentalState();
+
+  state.liveController = createController(document.getElementById('live-video'), document.getElementById('live-controls'), {isLive:true});
+  state.cinemaController = createController(document.getElementById('cinema-video'), document.getElementById('cinema-controls'), {isLive:false});
+
+  switchTab('live');
+}
+
+/* ========================= INIT ========================= */
+async function init(){
+  wireLoginForm();
+  wireTopControls();
+  wireModals();
+  wireKeyboard();
+  const saved = storageGet('xtream_session', null);
+  document.getElementById('initial-loader').classList.add('hidden');
+  if(saved){
+    try{ await loginWithSession(saved, true); enterApp(); }
+    catch(e){ localStorage.removeItem('xtream_session'); document.getElementById('login-screen').classList.remove('hidden'); }
+  } else {
+    document.getElementById('login-screen').classList.remove('hidden');
+  }
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
